@@ -1,10 +1,24 @@
 import { google } from 'googleapis';
 import { AttendanceRecord } from '@/types';
 
+function formatPrivateKey(key: string | undefined): string | undefined {
+  if (!key) return undefined;
+  let formatted = key.trim();
+  // Strip surrounding quotes if present
+  if (
+    (formatted.startsWith('"') && formatted.endsWith('"')) ||
+    (formatted.startsWith("'") && formatted.endsWith("'"))
+  ) {
+    formatted = formatted.slice(1, -1);
+  }
+  // Replace escaped \n with actual newlines
+  return formatted.replace(/\\n/g, '\n').trim();
+}
+
 function getGoogleSheetsClient() {
-  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n').replace(/^"(.*)"$/, '$1');
-  const sheetId = process.env.GOOGLE_SHEET_ID;
+  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL?.trim();
+  const privateKey = formatPrivateKey(process.env.GOOGLE_PRIVATE_KEY);
+  const sheetId = process.env.GOOGLE_SHEET_ID?.trim();
 
   if (!clientEmail || !privateKey || !sheetId) {
     throw new Error('Konfigurasi Google Sheets API (.env.local) belum lengkap. Pastikan GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY, dan GOOGLE_SHEET_ID sudah diatur.');
